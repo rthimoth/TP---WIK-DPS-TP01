@@ -43,7 +43,7 @@ $env:PING_LISTEN_PORT=8080
 
 2. Lancez le serveur :
    ```
-   npm start
+   npm run dev
    ```
 
 ## Utilisation
@@ -63,5 +63,5 @@ Pour lancer le serveur en mode développement avec rechargement automatique :
 
 # npm install
 # npm run build
-# npm start
+# npm run dev
 ##PING_LISTEN_PORT=8080 npm start
