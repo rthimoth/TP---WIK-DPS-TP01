@@ -1,0 +1,49 @@
+# ---- Étape de build ----
+FROM node:lts-alpine AS builder
+
+# Définir le répertoire de travail
+WORKDIR /app
+
+# Copier les fichiers de dépendances
+COPY package*.json ./
+
+# Installer toutes les dépendances (y compris celles de développement)
+RUN npm ci
+
+# Copier les fichiers de configuration TypeScript et les sources
+COPY tsconfig.json ./
+COPY src/ ./src/
+
+# Compiler l'application TypeScript en JavaScript
+RUN npm run build
+
+# ---- Étape d'exécution ----
+FROM node:lts-alpine
+
+# Définir le répertoire de travail
+WORKDIR /app
+
+# Copier uniquement les fichiers package.json pour les dépendances de production
+COPY package*.json ./
+
+# Installer uniquement les dépendances de production
+RUN npm ci --only=production
+
+# Créer un utilisateur non-root
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+# Copier les fichiers compilés depuis l'étape de build
+COPY --from=builder /app/dist ./dist
+
+# Changer le propriétaire des fichiers
+RUN chown -R appuser:appgroup /app
+
+# Définir la variable d'environnement pour le port
+ENV PING_LISTEN_PORT=8080
+
+# Passer à l'utilisateur non-root
+USER appuser
+
+# Commande pour démarrer l'application
+CMD ["node", "dist/server.js"]
+
